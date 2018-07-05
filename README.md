@@ -27,11 +27,9 @@ O Projeto conta com 3 pastas
 - Botão
 
 ## Video 
-O funcionamento pode ser visto neste link:
+O funcionamento atual pode ser visto neste link:
 
 https://youtu.be/8OtH3Y8lwzA
-
-<iframe width="560" height="315" src="https://www.youtube.com/embed/8OtH3Y8lwzA?rel=0&amp;controls=0&amp;showinfo=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 
 
 
