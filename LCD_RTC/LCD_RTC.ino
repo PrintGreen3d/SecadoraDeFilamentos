@@ -106,37 +106,34 @@ void MostraHora()
   
   // Le os valores (data e hora) do modulo DS3231
   DateTime now = rtc.now();
-  //int segundos = ConverteparaDecimal(now.second());
-  //int minutos = ConverteparaDecimal(now.minute());
-  //int horas = ConverteparaDecimal(now.hour());
-  //int diadasemana = ConverteparaDecimal(Wire.read()); 
-  //int diadomes = ConverteparaDecimal(now.day());
-  //int mes = ConverteparaDecimal(now.month());
-  //int ano = ConverteparaDecimal(now.year());
-
   pegaHora ();
-  int horas    = meuArray[2];
-  int minutos  = meuArray[1]; 
-  int segundos = meuArray[0];
-
-
-
+  int horas        = meuArray[2];
+  int minutos      = meuArray[1]; 
+  int segundos     = meuArray[0];
+  int controleTela = 0;
 
   //Comprimenta
   if((horas >= 1) && (horas <=12))
   {
+     if(controleTela == 1)
+     {
+        lcd.clear();
+     }
      lcd.setCursor(0,0);
      lcd.print("Bom dia!");
   }
   else if((horas >= 13) && (horas <=18))
   {
+     
      lcd.setCursor(0,0);
      lcd.print("Boa Tarde!");
+     controleTela = 0;
   }
   else
   {
      lcd.setCursor(0,0);
      lcd.print("Boa Noite!");
+     controleTela = 1;
   }
 
 
@@ -156,31 +153,12 @@ void MostraHora()
      
   //Mostra o dia da semana
 
-   
-  
-  /*switch(diadasemana)
-    {
-      case 0:lcd.print("Dom");
-      break;
-      case 1:lcd.print("Seg");
-      break;
-      case 2:lcd.print("Ter");
-      break;
-      case 3:lcd.print("Quar");
-      break;
-      case 4:lcd.print("Qui");
-      break;
-      case 5:lcd.print("Sex");
-      break;
-      case 6:lcd.print("Sab");
-    }*/
-    
-    lcd.setCursor(3,1);
-      lcd.print(now.day(), DEC);
-      lcd.print("/");
-      lcd.print(now.month(), DEC);
-      lcd.print("/");
-      lcd.print(now.year(), DEC);
+  lcd.setCursor(3,1);
+  lcd.print(now.day(), DEC);
+  lcd.print("/");
+  lcd.print(now.month(), DEC);
+  lcd.print("/");
+  lcd.print(now.year(), DEC);
 }
 
 int MostraPosicao()
@@ -192,9 +170,9 @@ int MostraPosicao()
 }
 
 
-int ajusteManual()
+int ajusteManual(int limiteMenor, int limiteMaior)
 {
-    int sensorValue = map(analogRead(Potenciometro), 0, 1025, 1, 251);
+    int sensorValue = map(analogRead(Potenciometro), 0, 1025, limiteMenor, limiteMaior);
     // int pot = map(analogRead(potPin), 0, 1025, 1, 1000);
     delay (100);
     return (sensorValue);
@@ -210,11 +188,6 @@ int ajusteTempo()
 
 
 
-byte converteparaDecimal(byte val)  
-{ 
-  //Converte de BCD para decimal
-  return ( (val/16*10) + (val%16) );
-}
 
 
 
@@ -402,6 +375,18 @@ void montaTelaAquecimento( int temperaturaMaxima, int temperaturaMinima, int tem
     digitalWrite(Rele, LOW); // Desliga o Rele para esfriar a estufa
     digitalWrite(LED_BUILTIN, LOW);
     // Implentar função do buzzer
+
+    // Limpeza de todas as variaveis usadas
+    horaInicial[0]  = NULL;
+    horaInicial[1]  = NULL; 
+    horaInicial[2]  = NULL;
+    diferencaTempo  = NULL;
+    horaFinal[3]    = {NULL};
+    horaInicial[3]  = {NULL};
+    diferencaTempo  = NULL;
+    inicioTempo     = NULL;
+    fimTempo        = NULL;
+    
     delay(500);
 }
 
@@ -419,10 +404,10 @@ void montaTelaAjusteManual()
     lcd.clear();
     lcd.setCursor(0,0);
     lcd.print("Temperatura:");
-    potenciometro = ajusteManual();
+    potenciometro = ajusteManual(0,250);
     lcd.setCursor(0,1);
     lcd.print(potenciometro);
-    delay(500);     
+    delay(1800);     
      // Verifica se o botão foi pressionado
     buttonState = digitalRead(Enter);
     //Se sim a entrada do arduino muda para Ligada (HIGH)
@@ -443,11 +428,11 @@ void montaTelaAjusteManual()
     
     lcd.clear();
     lcd.setCursor(0,0);
-    lcd.print("Tempo:");
+    lcd.print("Tempo (h):");
     potenciometro = ajusteTempo();
     lcd.setCursor(0,1);
     lcd.print(potenciometro);
-    delay(500);     
+    delay(1800);     
      // Verifica se o botão foi pressionado
     buttonState = digitalRead(Enter);
     //Se sim a entrada do arduino muda para Ligada (HIGH)
@@ -465,7 +450,7 @@ void montaTelaAjusteManual()
   lcd.setCursor(12,0);
   lcd.print(temperaturaSel);
   lcd.setCursor(0,1);
-  lcd.print("Tempo (h):");
+  lcd.print("Tempo (H):");
   lcd.setCursor(12,1);
   lcd.print(tempoSelecionado);
   delay(3000);
@@ -492,10 +477,10 @@ void ajustaDataHora()
     lcd.clear();
     lcd.setCursor(0,0);
     lcd.print("Hora Atual:");
-    potenciometro = ajusteManual();
+    potenciometro = ajusteManual(0,27);
     lcd.setCursor(0,1);
     lcd.print(potenciometro);
-    delay(1000);     
+    delay(1800);     
      // Verifica se o botão foi pressionado
     buttonState = digitalRead(Enter);
     //Se sim a entrada do arduino muda para Ligada (HIGH)
@@ -512,12 +497,14 @@ void ajustaDataHora()
   while(prendeLoop != 0)
   {
     lcd.clear();
-    potenciometro = ajusteManual();
+    lcd.setCursor(0,0);
+    lcd.print("Hora Atual:");
+    potenciometro = ajusteManual(0,69);
     lcd.setCursor(0,1);
     lcd.print(ajusteHora);
     lcd.print(":");    
     lcd.print(potenciometro);
-    delay(700);     
+    delay(1800);     
      // Verifica se o botão foi pressionado
     buttonState = digitalRead(Enter);
     //Se sim a entrada do arduino muda para Ligada (HIGH)
@@ -538,10 +525,10 @@ void ajustaDataHora()
     lcd.clear();
     lcd.setCursor(0,0);
     lcd.print("Data Atual:");
-    potenciometro = ajusteManual();
+    potenciometro = ajusteManual(1,36);
     lcd.setCursor(0,1);
     lcd.print(potenciometro);
-    delay(700);     
+    delay(1800);     
      // Verifica se o botão foi pressionado
     buttonState = digitalRead(Enter);
     //Se sim a entrada do arduino muda para Ligada (HIGH)
@@ -559,12 +546,14 @@ void ajustaDataHora()
   while(prendeLoop != 0)
   {
     lcd.clear();
-    potenciometro = ajusteManual();
+    lcd.setCursor(0,0);
+    lcd.print("Data Atual:");
+    potenciometro = ajusteManual(1,14);
     lcd.setCursor(0,1);
     lcd.print(ajusteDia);
     lcd.print("/");
     lcd.print(potenciometro);
-    delay(700);     
+    delay(1800);     
      // Verifica se o botão foi pressionado
     buttonState = digitalRead(Enter);
     //Se sim a entrada do arduino muda para Ligada (HIGH)
@@ -577,14 +566,42 @@ void ajustaDataHora()
   }
 
   potenciometro = NULL;
-  prendeLoop     = 16;
+  prendeLoop     = 26;
+
+  while(prendeLoop != 0)
+  {
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Data Atual:");
+
+    lcd.setCursor(0,1);
+    lcd.print(ajusteDia);
+    lcd.print("/");
+    lcd.print(ajusteMes);
+    lcd.print("/");
+    potenciometro = ajusteManual(2018,2040);
+    lcd.print(potenciometro);
+    delay(1800);     
+     // Verifica se o botão foi pressionado
+    buttonState = digitalRead(Enter);
+    //Se sim a entrada do arduino muda para Ligada (HIGH)
+    if (buttonState == HIGH) 
+    {
+      
+      ajusteAno  = potenciometro;
+      prendeLoop = 0;
+    }
+  }
+
+  potenciometro = NULL;
+  prendeLoop    = 0;
 
   lcd.clear();
   rtc.begin();
   rtc.lostPower();
-  rtc.adjust(DateTime(2018, ajusteMes, ajusteDia, ajusteHora, ajusteminuto, 0));
+  rtc.adjust(DateTime(ajusteAno, ajusteMes, ajusteDia, ajusteHora, ajusteminuto, 0));
 
-  delay(800);
+  delay(3000);
   StatusEnter = 0;
   lcd.clear();
   MostraHora();
@@ -645,15 +662,6 @@ void setup()
   if (! rtc.begin()) {
     Serial.println("Couldn't find RTC");
     while (1);
-  }
-
-  if (rtc.lostPower()) {
-   // Serial.println("RTC lost power, lets set the time!");
-    // following line sets the RTC to the date & time this sketch was compiled
-    //rtc.adjust(DateTime(2018,6,13,11,47,0));
-    // This line sets the RTC with an explicit date & time, for example to set
-    // January 21, 2014 at 3am you would call:
-    // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
   }
 
   // Inicializa o botão de seleção (ENTER)
